@@ -9,7 +9,7 @@
 ```bash
 $ git clone https://github.com/AriYu/unscented_kalman_filter.git
 $ mkdir bin && cd bin && cmake .. && make && cd .. && ./test
-$ gnuplot plotsave2pdf # 今回はpngに出力
+$ gnuplot plotsave2pdf.plt # 今回はpngに出力
 ```
 
 ## だいたいこんな感じ
