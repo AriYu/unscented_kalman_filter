@@ -1,11 +1,17 @@
 # Unscented Kalan Filter
 
+## Required
+- OpenCV 2.4.9
+- GNUplot
+
 ## How to use
 
 ```bash
 $ git clone https://github.com/AriYu/unscented_kalman_filter.git
 $ mkdir bin && cd bin && cmake .. && make && cd .. && ./test
+$ gnuplot plotsave2pdf # 今回はpngに出力
 ```
+
 ## だいたいこんな感じ
 ![clustering](./estimation.png)
 
