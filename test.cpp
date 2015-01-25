@@ -46,7 +46,7 @@ int main(void)
   cv::Mat x0 = (cv::Mat_<double>(state_dimension, 1) << 0.0);
   cv::Mat p0 = (cv::Mat_<double>(state_dimension, 1) << 1.0);
 
-  cv::Mat ProcessNoiseCov  = (cv::Mat_<double>(state_dimension, 1) << 10.0);
+  cv::Mat ProcessNoiseCov  = (cv::Mat_<double>(state_dimension, 1) << 1.0);
   cv::Mat ProcessNoiseMean = (cv::Mat_<double>(state_dimension, 1) << 0.0);
   cv::Mat ObsNoiseCov  = (cv::Mat_<double>(output_dimension, 1) << 3.0);
   cv::Mat ObsNoiseMean = (cv::Mat_<double>(output_dimension, 1) << 0);
