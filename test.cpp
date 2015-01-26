@@ -7,12 +7,13 @@
 #include <opencv2/video/tracking.hpp>
 
 #include "unscented_kalman_filter.h"
+#include "RootMeanSquareError.h"
 
 using namespace std;
 
 double       k = 0.0;		//! loop count
 const double T = 50.0;          //! loop limit
-
+const int iterate = 100;
 //----------------------------
 // Process Equation
 //! x		: 状態ベクトル
@@ -51,9 +52,9 @@ int main(void)
   cv::Mat ObsNoiseCov  = (cv::Mat_<double>(output_dimension, 1) << 3.0);
   cv::Mat ObsNoiseMean = (cv::Mat_<double>(output_dimension, 1) << 0);
   
-  cv::Mat state             = cv::Mat::zeros(state_dimension, 1, CV_64F); /* (x) */
-  cv::Mat last_state        = cv::Mat::zeros(state_dimension, 1, CV_64F); /* (x) */
-  cv::Mat processNoise      = cv::Mat::zeros(state_dimension, 1, CV_64F);
+  cv::Mat state             = cv::Mat::zeros(state_dimension,  1, CV_64F); /* (x) */
+  cv::Mat last_state        = cv::Mat::zeros(state_dimension,  1, CV_64F); /* (x) */
+  cv::Mat processNoise      = cv::Mat::zeros(state_dimension,  1, CV_64F);
   cv::Mat measurement       = cv::Mat::zeros(output_dimension, 1, CV_64F);
   cv::Mat measurementNoise  = cv::Mat::zeros(output_dimension, 1, CV_64F);
   cv::Mat first_sensor      = cv::Mat::zeros(output_dimension, 1, CV_64F);
@@ -64,39 +65,50 @@ int main(void)
 										, sqrt(ProcessNoiseCov.at<double>(0, 0)));
   normal_distribution<> obsNoiseGen(ObsNoiseMean.at<double>(0, 0)
 									, sqrt(ObsNoiseCov.at<double>(0, 0)));
-  
-  
-  UnscentedKalmanFilter ukf(1, 1, x0, p0);
-  ukf.SetProcessNoise(ProcessNoiseCov);
-  ukf.SetObservationNoise(ObsNoiseCov);
-  
-  for(k = 0; k < T; k+= 1.0){
-	// ==============================
-	// Generate Actual Value
-	// =============================
-	double input = 0.0;
-	processNoise.at<double>(0, 0) = processNoiseGen(engine);
-	process(state, last_state, input);
-	state = state + processNoise;
+    
+  double rmse_average = 0;
 
-	// ==============================
-	// Generate Observation Value
-	// ==============================
-	measurementNoise.at<double>(0, 0) = obsNoiseGen(engine);
-	observation(measurement, state);
-	first_sensor = measurement + measurementNoise;
+  for(int loop = 0; loop < iterate; loop++){  
+	RMSE rmse_calc;
+	UnscentedKalmanFilter ukf(1, 1, x0, p0);
+	ukf.SetProcessNoise(ProcessNoiseCov);
+	ukf.SetObservationNoise(ObsNoiseCov);
 
-	ukf.Update(process, observation, first_sensor);
-	cv::Mat ukf_est = ukf.GetEstimation();
+	for(k = 0; k < T; k+= 1.0){
+	  // ==============================
+	  // Generate Actual Value
+	  // =============================
+	  double input = 0.0;
+	  processNoise.at<double>(0, 0) = processNoiseGen(engine);
+	  process(state, last_state, input);
+	  state = state + processNoise;
 
-	outputresult << state.at<double>(0, 0) << " "       // [1] true state
-				 << first_sensor.at<double>(0, 0) << " "                 // [2] first sensor
-				 << ukf_est.at<double>(0,0)
-				 << endl;    // [3] predicted state by PF(MMSE)
+	  // ==============================
+	  // Generate Observation Value
+	  // ==============================
+	  measurementNoise.at<double>(0, 0) = obsNoiseGen(engine);
+	  observation(measurement, state);
+	  first_sensor = measurement + measurementNoise;
+
+	  ukf.Update(process, observation, first_sensor);
+	  cv::Mat ukf_est = ukf.GetEstimation();
+
+	  outputresult << state.at<double>(0, 0) << " "        // [1] true state
+				   << first_sensor.at<double>(0, 0) << " " // [2] first sensor
+				   << ukf_est.at<double>(0,0)              // [3] predicted state by UKF
+				   << endl;                                
 	  
+	  rmse_calc.storeData(state.at<double>(0, 0), ukf_est.at<double>(0, 0));
 	
-	last_state = state;
+	  last_state = state;
+	}
+	rmse_calc.calculationRMSE();
+	cout << "RMSE :" << rmse_calc.getRMSE() << endl;
+	rmse_average += rmse_calc.getRMSE();
   }
-
+  rmse_average = rmse_average / (double)iterate;
+  cout << "+----------------------------------------+" << endl;
+  cout << " Ave RMSE : " << rmse_average << endl;
+  cout << "+----------------------------------------+" << endl;
   return 0;
 }

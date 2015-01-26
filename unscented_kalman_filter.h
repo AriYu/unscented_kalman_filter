@@ -27,12 +27,6 @@ class UnscentedKalmanFilter
   virtual cv::Mat GetEstimation();
  private:
   virtual void  Cholesky(cv::Mat &P, cv::Mat &S);
-  virtual void UnscentedTransformProcess(void(*processmodel)(cv::Mat &x, 
-															const cv::Mat &xpre, 
-															const double &input));
-  virtual void UnscentedTransformObservation(void(*obsmodel)(cv::Mat &z, 
-															const cv::Mat &x));
-  
 
   int dimX_;
   int dimY_;

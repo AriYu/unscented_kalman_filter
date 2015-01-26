@@ -14,5 +14,6 @@ ADD_DEFINITIONS(
 add_executable( 
   test test.cpp 
   unscented_kalman_filter.cpp
+  RootMeanSquareError.cpp
   )
 target_link_libraries( test ${OpenCV_LIBS} )

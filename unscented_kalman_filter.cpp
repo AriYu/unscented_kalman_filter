@@ -63,63 +63,6 @@ void UnscentedKalmanFilter::Cholesky(cv::Mat &P, cv::Mat &S)
   }
 }
 
-void UnscentedKalmanFilter::UnscentedTransformProcess(void(*processmodel)(cv::Mat &x, 
-															const cv::Mat &xpre, 
-															const double &input))
-{
-  // シグマポイントの計算
-  double kappa = 3.0 - (double)dimX_; // スケーリングパラメータ
-  std::vector<double> w(2*dimX_ + 1, 0.0);
-  w[0] = kappa / ((double)dimX_ + kappa); // 重み
-  for(int i = 1; i < (int)w.size(); i++){
-	w[i] = 1.0/(2.0*(dimX_+kappa));
-  }
-  // シグマポイントの生成
-  std::vector<cv::Mat> sigma_points(2*dimX_ + 1);
-  for(int i = 0; i < (int)sigma_points.size(); i++){
-	sigma_points[i] = cv::Mat_<double>(dimX_, 1);  // シグマポイントのメモリ確保
-  }
-
-  // 共分散行列をコレスキー分解
-  cv::Mat rootP = P_.clone(); // メモリの確保
-  Cholesky(P_, rootP); // コレスキー分解
-
-  // シグマポイントの計算
-  sigma_points[0] = xhat_;
-  for(int i = 1; i < dimX_; i++){
-	sigma_points[i] = xhat_ + sqrt(dimX_ + kappa)*rootP.col(i);
-	sigma_points[i+dimX_] = xhat_ - sqrt(dimX_ + kappa)*rootP.col(i);
-  }
-
-  // シグマポイントの更新
-  for(int i = 0; i < (int)sigma_points.size(); i++){
-	double input = 0;
-	processmodel(sigma_points[i], sigma_points[i], input);
-  }
-
-  // 事前状態推定値の計算
-  cv::Mat xhatm = xhat_.clone(); // メモリの確保
-  for(int i = 0; i < (int)sigma_points.size(); i++){
-	for(int j = 0; j < xhatm.rows; j++){
-	  xhatm.at<double>(j, 1) += w[i]*sigma_points[i].at<double>(j, 1);
-	}
-  }
-
-  // 事前誤差共分散行列の計算
-  cv::Mat Pm = P_.clone(); // メモリの確保
-  cv::Mat diff = xhatm.clone(); // 途中計算用
-  for(int i = 0; i < (int)sigma_points.size(); i++){
-	diff = sigma_points[i] - xhatm;
-	Pm += w[i] * diff * diff.t();
-  }
-  Pm += ProcessNoiseCov_; // システムノイズを考慮
-
-}
-
-void UnscentedKalmanFilter::UnscentedTransformObservation(void(*obsmodel)(cv::Mat &z, 
-															const cv::Mat &x))
-{
-}
 
 void UnscentedKalmanFilter::Update(void(*processmodel)(cv::Mat &x, const cv::Mat &xpre, 
 													   const double &input),
