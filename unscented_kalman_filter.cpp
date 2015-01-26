@@ -76,9 +76,13 @@ void UnscentedKalmanFilter::Update(void(*processmodel)(cv::Mat &x, const cv::Mat
   double kappa = 3.0 - (double)dimX_; // スケーリングパラメータ
   std::vector<double> w(2*dimX_ + 1, 0.0);
   w[0] = kappa / ((double)dimX_ + kappa); // 重み
+  double sum_weight = w[0];
   for(int i = 1; i < (int)w.size(); i++){
 	w[i] = 1.0/(2.0*(dimX_+kappa));
+	sum_weight += w[i];
   }
+
+ 
   // シグマポイントの生成
   std::vector<cv::Mat> sigma_points(2*dimX_ + 1);
   for(int i = 0; i < (int)sigma_points.size(); i++){

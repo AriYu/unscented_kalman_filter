@@ -13,7 +13,7 @@ using namespace std;
 
 double       k = 0.0;		//! loop count
 const double T = 50.0;          //! loop limit
-const int iterate = 100;
+const int iterate = 1;
 //----------------------------
 // Process Equation
 //! x		: 状態ベクトル
@@ -21,7 +21,7 @@ const int iterate = 100;
 //! input	: 制御入力
 void process(cv::Mat &x, const cv::Mat &xpre, const double &input)
 {
-    x.at<double>(0, 0) =  0.5*xpre.at<double>(0,0) 
+    x.at<double>(0, 0) =  0.2*xpre.at<double>(0,0) 
 	  + 25.0*(xpre.at<double>(0,0) / (1.0 + (xpre.at<double>(0,0)*xpre.at<double>(0,0)))) 
 	  +  8.0 * cos(1.2*k);
 }
