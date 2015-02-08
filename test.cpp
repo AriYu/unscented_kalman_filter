@@ -12,7 +12,7 @@
 using namespace std;
 
 double       k = 0.0;		//! loop count
-const double T = 50.0;          //! loop limit
+const double T = 200.0;          //! loop limit
 const int iterate = 1;
 //----------------------------
 // Process Equation
@@ -21,9 +21,10 @@ const int iterate = 1;
 //! input	: 制御入力
 void process(cv::Mat &x, const cv::Mat &xpre, const double &input)
 {
-    x.at<double>(0, 0) =  0.2*xpre.at<double>(0,0) 
-	  + 25.0*(xpre.at<double>(0,0) / (1.0 + (xpre.at<double>(0,0)*xpre.at<double>(0,0)))) 
-	  +  8.0 * cos(1.2*k);
+    // x.at<double>(0, 0) =  0.2*xpre.at<double>(0,0) 
+	//   + 25.0*(xpre.at<double>(0,0) / (1.0 + (xpre.at<double>(0,0)*xpre.at<double>(0,0)))) 
+	//   +  8.0 * cos(1.2*k);
+  // x.at<double>(0, 0) =  xpre.at<double>(0,0) + sin(xpre.at<double>(0,0)/2.0) + cos(xpre.at<double>(0,0));
 }
 
 //-------------------------
@@ -32,7 +33,8 @@ void process(cv::Mat &x, const cv::Mat &xpre, const double &input)
 //! x : 状態ベクトル
 void observation(cv::Mat &z, const cv::Mat &x)
 {
-  z.at<double>(0, 0) = (x.at<double>(0, 0) * x.at<double>(0, 0)) / 20.0;
+  z.at<double>(0, 0) = pow(x.at<double>(0, 0) * x.at<double>(0, 0),2.0)/20.0  ;
+  //  z.at<double>(0, 0) = pow(x.at<double>(0, 0) * x.at<double>(0, 0),4.0);
 }
 
 
@@ -49,7 +51,7 @@ int main(void)
 
   cv::Mat ProcessNoiseCov  = (cv::Mat_<double>(state_dimension, 1) << 1.0);
   cv::Mat ProcessNoiseMean = (cv::Mat_<double>(state_dimension, 1) << 0.0);
-  cv::Mat ObsNoiseCov  = (cv::Mat_<double>(output_dimension, 1) << 3.0);
+  cv::Mat ObsNoiseCov  = (cv::Mat_<double>(output_dimension, 1) << 10.0);
   cv::Mat ObsNoiseMean = (cv::Mat_<double>(output_dimension, 1) << 0);
   
   cv::Mat state             = cv::Mat::zeros(state_dimension,  1, CV_64F); /* (x) */
